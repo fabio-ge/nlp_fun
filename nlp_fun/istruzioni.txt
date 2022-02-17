@@ -1,0 +1,13 @@
+Premesse
+Installare python
+Installare pip
+Installare i requisiti:
+c' è un file requirements.txt
+python -m pip install -r requirements.txt
+
+Per far partire il server
+Dalla directory del progetto fare, via shell, export FLASK_APP=app.py
+e poi, sempre sulla shell, scrivere flask run
+Poi, aprire con un browser il file index.html
+
+BUON DIVERTIMENTO!

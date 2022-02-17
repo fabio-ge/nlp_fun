@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Come ti senti?</title>
+    <link rel="stylesheet" href="css/main.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+</head>
+<body>
+    <header>
+        <h1>Ciao, analizzo il linguaggio naturale</h1>
+        <p>Vuoi provare? Cerca il testo ad un determinato link, il mio compito è quello di trovare le frasi che esprimono disagio psicologico</p>
+        <span class="fab fa-optin-monster"></span>
+    </header>
+    <div class="gradient"></div>
+    <div class="section-metallo">
+        <p>Fai subito una prova:</p>
+            <ul>
+                <li>Cerca prima a questo link: https://www.depressione-ansia.it/2016/06/racconti-di-esperienze/</li>
+                <li>Poi a questo: https://www.lascimmiayoga.com/</li>
+                <li>Così avrai una prima idea della differenza.</li>
+            </ul>
+        <input type="text" name="url" placeholder="Inserisci un url"/>
+        <a id="invia" href="#">Cerca</a>   
+    </div>
+    <div class="gradient"></div>
+    <div id="risultato">
+
+        <p id="percent"></p>
+        <p id="vocabolario"></p>
+        <p id="testo"></p>
+        <p id="pie"></p>
+        <table id="frasi" class="nascondi">
+            <thead>
+                <tr>
+                    <th>La cosa più interessante: leggere le frasi sul disagio</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+            </tbody>
+        </table>
+    </div>
+    <script>
+       let bottone = document.querySelector('#invia');
+       let url = document.querySelector('input[name="url"]');
+       
+       bottone.addEventListener('click',function(e){
+        let data = {"url": url.value}
+        
+        fetch('http://127.0.0.1:5000/gettext',{'method': 'POST',
+                          'headers': {
+                              'Content-type':'application/json'
+                          },
+                          'body': JSON.stringify(data) 
+                        })
+            .then(response => response.json())
+            .then(data => {
+                if(data['esito'] === 'ok'){
+                     appendiHtml('#percent',tPercent(data['percent_disagio']));   
+                     appendiHtml('#vocabolario',tVocabolario(data['vocabolario']));
+                     appendiHtml('#testo',tTesto(data['testo']));
+                     mostra('table#frasi');
+                     appendiHtml('#frasi tbody',tbodyFrasi(data['frasi_disagio']));
+                     if(data['frequenze']!=='NO'){
+                         appendiHtml('#pie',tImg(data['frequenze']));
+                     }
+                     
+                }
+                else{
+                    alert(data['errore']);
+                }  
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });    
+        });
+
+        //helper functions
+        function tImg(src){
+            return `<span>Parole più usate</span><br/><img src="${src}" width="320px" height="240px" alt="">`;
+
+        }
+
+        function tVocabolario(voc){
+            return `Parole usate: ${voc}`;
+        }
+
+        function tTesto(testo){
+            return `Parole totali: ${testo}`;
+        }
+
+        function tPercent(percent){
+            function getClassIcon(){
+                let classe = percent<3 ? 'fa-smile' : (percent < 6 ? 'fa-sad-tear' : 'fa-sad-cry');
+                return classe;
+            }
+
+            let icona = `<span class="far ${getClassIcon()}"></span>`;
+            return `La percentuale di frasi sul disagio è del ${percent} &percnt;${icona}`;
+        }
+
+        function tbodyFrasi(frasi){
+            return frasi
+                    .map((el)=> `<tr><td>${el}</td></tr>`)
+                    .join('')
+        }
+
+        function appendiHtml(selettore,markup){
+            dom = document.querySelector(selettore);
+            dom.innerHTML = markup;
+        }
+        
+        function mostra(selettore){
+            dom = document.querySelector(selettore);
+            dom.classList.remove('nascondi');
+        }
+    </script>
+</body>
+</html>
